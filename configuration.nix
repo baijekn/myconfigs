@@ -15,13 +15,43 @@
   programs.nix-ld.enable = true;
   programs.niri.enable = true;
   
-  hardware.bluetooth.enable = true; 
-  hardware.bluetooth.powerOnBoot = true;
-
+ 
+  hardware.bluetooth = {
+    enable = true;
+    # Принудительно включает Bluetooth при старте системы и выходе из сна
+    powerOnBoot = true; 
+    settings = {
+      General = {
+        # Включает экспериментальные функции (показ заряда батареи, современные протоколы)
+        Experimental = true;
+        # Решает проблему с сопряжением большинства современных наушников (Sony, Apple и др.)
+        ControllerMode = "dual"; 
+      };
+    };
+  };
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Включаем управление профилями питания (performance, balanced, power-saver)
+  services.power-profiles-daemon.enable = true;
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # Ограничение на количество конфигураций в меню загрузки (удаляет старые профили системы)
+  boot.loader.systemd-boot.configurationLimit = 3;
+  
+  services.logind = {
+    # "suspend" — ноутбук уснет и заблокируется (рекомендуется для батареи)
+    # "lock" — ноутбук продолжит работать, но экран заблокируется
+    lidSwitch = "suspend"; 
+  };
+  
+  # Автоматический запуск сборщика мусора для очистки диска
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
 
   networking.hostName = "nixos"; 
   networking.networkmanager.enable = true;
@@ -56,6 +86,10 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
+    (writeShellScriptBin "update" ''
+    cd /etc/nixos
+    git add configuration.nix
+    sudo nixos-rebuild switch --flake .#nixos'')
     neovim 
     wget
     xwayland-satellite

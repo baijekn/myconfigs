@@ -11,6 +11,7 @@
     wl-clipboard 
     typst
     python3
+    zed-editor
 
     # Зависимости для сборки и работы плагинов LazyVim
     ripgrep
