@@ -9,13 +9,16 @@
   
   services.displayManager.sddm.enable = true; 
   services.displayManager.sddm.wayland.enable = true;
-  services.upower.enable = true;
   services.happ.enable = true;
-  
+  powerManagement.powertop.enable = true;  
+  virtualisation.libvirtd.enable = true;
+  programs.virt-manager.enable = true;
   programs.nix-ld.enable = true;
   programs.niri.enable = true;
-  
- 
+  services.logind.settings.Login.HandleLidSwitch = "suspend";  
+  services.upower.enable = true;
+  # Отключаем агрессивное энергосбережение для Bluetooth-контроллера
+  boot.kernelParams = [ "btusb.enable_autosuspend=0" "thinkpad_acpi.fan_control=1" "pcie_aspm=force" "mem_sleep_default=deep" "amd_pstate=active" ]; 
   hardware.bluetooth = {
     enable = true;
     # Принудительно включает Bluetooth при старте системы и выходе из сна
@@ -30,7 +33,26 @@
     };
   };
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  programs.qylock = {
+    enable = true;
+    theme = "pixel-sakura"; # Варианты: "dots", "nier-automata", "clockwork", "tape"
+  }; 
 
+  services.displayManager.sddm.extraPackages = with pkgs; [
+    qt6.qtmultimedia
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
+    gst_all_1.gst-plugins-bad
+    gst_all_1.gst-plugins-ugly
+    perl
+  ];
+  hardware.graphics = {
+  enable = true;
+  extraPackages = with pkgs; [
+    rocmPackages.clr.icd
+    ];
+  };
   # Включаем управление профилями питания (performance, balanced, power-saver)
   services.power-profiles-daemon.enable = true;
 
@@ -39,7 +61,11 @@
 
   # Ограничение на количество конфигураций в меню загрузки (удаляет старые профили системы)
   boot.loader.systemd-boot.configurationLimit = 3;
-  
+  environment.sessionVariables = {
+    MOZ_ENABLE_WAYLAND = "1";       # Нативный Wayland для Firefox
+    QT_QPA_PLATFORM = "wayland;xcb"; # Для Telegram (он на Qt)
+    NIXOS_OZONE_WL = "1";           # Для всех Electron-приложений
+  };  
   services.logind = {
     # "suspend" — ноутбук уснет и заблокируется (рекомендуется для батареи)
     # "lock" — ноутбук продолжит работать, но экран заблокируется
@@ -79,7 +105,7 @@
   users.users."baije" = {
     isNormalUser = true;
     description = "baije";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "libvirtd"];
     packages = with pkgs; [];
   };
 

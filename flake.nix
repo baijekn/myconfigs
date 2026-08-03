@@ -10,17 +10,25 @@
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Подключаем набор тем qylock
+    qylock.url = "github:Darkkal44/qylock";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, qylock, ... }@inputs: {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
         ./configuration.nix
         
+        # Подключаем модуль тем qylock
+        qylock.nixosModules.default
+
         # Подключаем модуль Home Manager
         home-manager.nixosModules.home-manager
         {
+          # ОПЦИЯ ДОЛЖНА БЫТЬ ЗДЕСЬ:
+          home-manager.backupFileExtension = "backup";
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           # Указываем, что настройки для пользователя baije лежат в home.nix

@@ -12,16 +12,22 @@
     typst
     python3
     zed-editor
-
+    pkgs.librewolf
+    opencode
+    obsidian
     # Зависимости для сборки и работы плагинов LazyVim
     ripgrep
     fd
     gnumake
     gcc
-
+    ollama
+    tmux
     # Дополнительные утилиты
     lsd
     fastfetch
+    qbittorrent    
+    kdePackages.dolphin    
+    vscodium
   ];
 
   fonts.fontconfig.enable = true;
@@ -30,6 +36,13 @@
   xdg.configFile."nvim/init.lua".source = ./nvim/init.lua;
   xdg.configFile."nvim/lua/config/lazy.lua".source = ./nvim/lua/config/lazy.lua;
   xdg.configFile."nvim/lua/plugins/init.lua".source = ./nvim/lua/plugins/init.lua;
+
+  xdg.mimeApps = {
+  enable = true;
+  defaultApplications = {
+    "inode/directory" = [ "kdePackages.dolphin" ];
+    };
+  };
 
   programs.neovim = {
     enable = true;
@@ -94,4 +107,10 @@
   };
 
   programs.home-manager.enable = true;
+
+  programs.vscodium = {
+    enable = true;
+    profiles.default.extensions = [  ];
+  };   
+  xdg.configFile."niri/config.kdl".source = ./niri-config.kdl;
 }
